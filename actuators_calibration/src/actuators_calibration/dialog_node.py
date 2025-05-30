@@ -7,7 +7,8 @@ from rclpy.node import Node
 class MyDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("ROS 2 + QDialog Example")
+        self.setWindowTitle("Quadro UAV Motor Calibration Tools") 
+        self.setWindowFlags(Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         self.resize(600, 400)  # Set initial window size
 
         main_layout = QVBoxLayout()
@@ -64,7 +65,7 @@ def main(args=None):
     dialog.show()
 
     timer = QTimer()
-    timer.timeout.connect(lambda: rclpy.spin_once(ros_node, timeout_sec=0.1))
+    timer.timeout.connect(lambda: rclpy.spin_once(ros_node, timeout_sec=0.05))
     timer.start(100)
 
     exit_code = app.exec_()
