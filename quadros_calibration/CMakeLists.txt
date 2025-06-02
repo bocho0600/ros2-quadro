@@ -8,8 +8,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/MotorSpeed.msg"
   DEPENDENCIES std_msgs
@@ -27,6 +30,7 @@ ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets )
 rosidl_target_interfaces(calibration_gui ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 target_link_libraries(calibration_gui ${rosidl_typesupport_target})
+target_link_libraries(calibration_gui Qt5::Widgets)
 
 install(TARGETS
   calibration_gui

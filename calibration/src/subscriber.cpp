@@ -1,20 +1,20 @@
 #include "rclcpp/rclcpp.hpp"
-#include "calobration/msg/my_msg.hpp"
+#include "calibration/msg/my_msg.hpp"
 
 class MySubscriber : public rclcpp::Node
 {
 public:
   MySubscriber() : Node("my_subscriber")
   {
-    sub_ = this->create_subscription<calobration::msg::MyMsg>(
+    sub_ = this->create_subscription<calibration::msg::MyMsg>(
       "my_topic", 10,
-      [this](const calobration::msg::MyMsg::SharedPtr msg) {
+      [this](const calibration::msg::MyMsg::SharedPtr msg) {
         RCLCPP_INFO(this->get_logger(), "Received: '%s'", msg->data.c_str());
       });
   }
 
 private:
-  rclcpp::Subscription<calobration::msg::MyMsg>::SharedPtr sub_;
+  rclcpp::Subscription<calibration::msg::MyMsg>::SharedPtr sub_;
 };
 
 int main(int argc, char **argv)

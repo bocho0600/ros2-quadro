@@ -1,16 +1,17 @@
 #include "rclcpp/rclcpp.hpp"
-#include "calobration/msg/my_msg.hpp"
+#include "calibration/msg/my_msg.hpp"
+#include "calibration/msg/motor_speed.hpp"
 
 class MyPublisher : public rclcpp::Node
 {
 public:
   MyPublisher() : Node("my_publisher")
   {
-    pub_ = this->create_publisher<calobration::msg::MyMsg>("my_topic", 10);
+    pub_ = this->create_publisher<calibration::msg::MyMsg>("my_topic", 10);
     timer_ = this->create_wall_timer(
       std::chrono::seconds(1),
       [this]() {
-        auto msg = calobration::msg::MyMsg();
+        auto msg = calibration::msg::MyMsg();
         msg.data = "Hello from publisher!";
         pub_->publish(msg);
         RCLCPP_INFO(this->get_logger(), "Published: '%s'", msg.data.c_str());
@@ -18,7 +19,7 @@ public:
   }
 
 private:
-  rclcpp::Publisher<calobration::msg::MyMsg>::SharedPtr pub_;
+  rclcpp::Publisher<calibration::msg::MyMsg>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 
