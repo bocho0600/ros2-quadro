@@ -1,2 +1,4 @@
 # ros2-quadro
-pip install pyqt5
+
+ros2 run quadros_calibration calibration_gui
+ros2 topic echo /MotorSpeed
