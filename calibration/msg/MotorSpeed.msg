@@ -1,4 +1,0 @@
-float32 motor_speed1
-float32 motor_speed2
-float32 motor_speed3
-float32 motor_speed4
