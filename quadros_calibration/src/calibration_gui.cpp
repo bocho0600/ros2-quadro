@@ -6,12 +6,14 @@
 #include <QSlider>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QPushButton>
 #include <QWidget>
 #include <QStackedLayout>
 #include <QTimer>
 #include <QThread>
 #include <array>
 #include <memory>
+#include <QCheckBox>
 
 #include "rclcpp/rclcpp.hpp"
 #include "quadros_calibration/msg/motor_speed.hpp"
@@ -20,8 +22,9 @@ class MotorCalibrationWidget : public QWidget {
     Q_OBJECT
 public:
     explicit MotorCalibrationWidget(QWidget *parent = nullptr)
-        : QWidget(parent)
+        : QWidget(parent), armed_(false)
     {
+        QVBoxLayout *main_vbox = new QVBoxLayout();
         QHBoxLayout *layout = new QHBoxLayout();
         QStringList slider_titles = {"Motor 1", "Motor 2", "Motor 3", "Motor 4"};
         for (int i = 0; i < 4; ++i) {
@@ -39,9 +42,8 @@ public:
             slider->setMinimum(0);
             slider->setMaximum(100);
             slider->setValue(0);
-            slider->setFixedWidth(80); // Increased width for a thicker slider
+            slider->setFixedWidth(80);
 
-            // Make the slider handle thicker using stylesheet
             slider->setStyleSheet(
                 "QSlider::groove:vertical {"
                 "    background: #bbb;"
@@ -55,11 +57,11 @@ public:
                 "    border-radius: 8px;"
                 "}"
                 "QSlider::sub-page:vertical {"
-                "    background: #bbb;"   // The trace color
+                "    background: #bbb;"
                 "    border-radius: 8px;"
                 "}"
                 "QSlider::add-page:vertical {"
-                "    background: #3880ff;"      // The unfilled part
+                "    background: #3880ff;"
                 "    border-radius: 8px;"
                 "}"
             );
@@ -76,18 +78,71 @@ public:
 
             sliders_[i] = slider;
         }
-        setLayout(layout);
+
+        // Slide switch for Arm/Disarm
+        QHBoxLayout *switch_layout = new QHBoxLayout();
+        QLabel *arm_label = new QLabel("Arm");
+        arm_label->setStyleSheet("font-size: 12pt;");
+        QLabel *disarm_label = new QLabel("Disarm");
+        disarm_label->setStyleSheet("font-size: 12pt;");
+        arm_switch_ = new QCheckBox();
+        arm_switch_->setChecked(false);
+        arm_switch_->setStyleSheet(
+            "QCheckBox::indicator { width: 40px; height: 20px; }"
+            "QCheckBox::indicator:unchecked {"
+            "    image: url();"
+            "    border-radius: 10px;"
+            "    background: #bbb;"
+            "}"
+            "QCheckBox::indicator:checked {"
+            "    image: url();"
+            "    border-radius: 10px;"
+            "    background: #3880ff;"
+            "}"
+        );
+        switch_layout->addWidget(arm_label);
+        switch_layout->addWidget(arm_switch_);
+        switch_layout->addWidget(disarm_label);
+        switch_layout->setAlignment(Qt::AlignCenter);
+
+        connect(arm_switch_, &QCheckBox::toggled, this, &MotorCalibrationWidget::toggleArm);
+
+        main_vbox->addLayout(switch_layout);
+        main_vbox->addLayout(layout);
+        setLayout(main_vbox);
+
+        // Initialize sliders as disabled
+        for (int i = 0; i < 4; ++i) {
+            sliders_[i]->setEnabled(false);
+        }
     }
 
     std::array<int, 4> getMotorSpeeds() const {
         std::array<int, 4> speeds;
         for (int i = 0; i < 4; ++i)
-            speeds[i] = sliders_[i]->value();
+            speeds[i] = sliders_[i]->isEnabled() ? sliders_[i]->value() : 0;
         return speeds;
     }
 
-private:
-    QSlider* sliders_[4];
+private slots:
+    void toggleArm(bool checked) {
+        armed_ = checked;
+        if (!armed_) {
+            for (int i = 0; i < 4; ++i) {
+                sliders_[i]->setValue(0); // Reset sliders to 0 when disarmed
+                sliders_[i]->setEnabled(false); // Disable sliders when disarmed
+            }
+        } else {
+            for (int i = 0; i < 4; ++i) {
+                sliders_[i]->setEnabled(true);
+            }
+        }
+    }
+
+private: 
+    QSlider* sliders_[4]; // Array of sliders for each motor
+    QCheckBox* arm_switch_; // Checkbox to arm/disarm the motors
+    bool armed_; // Flag to indicate if motors are armed
 };
 
 class SensorsCalibrationWidget : public QWidget {
@@ -192,14 +247,14 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
 
-    auto node = std::make_shared<rclcpp::Node>("motor_calibration_gui");
+    auto node = std::make_shared<rclcpp::Node>("motor_calibration_gui"); // Create a ROS2 node
 
     // Start ROS2 spinning in a background thread
-    RosSpinThread ros_thread(node);
-    ros_thread.start();
+    RosSpinThread ros_thread(node); 
+    ros_thread.start(); // Start the thread
 
-    CalibrationDialog dialog(node);
-    dialog.show();
+    CalibrationDialog dialog(node); // Pass the node to the dialog
+    dialog.show(); // Show the dialog
 
     int ret = app.exec();
 
