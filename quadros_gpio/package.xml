@@ -12,7 +12,7 @@
   <!-- Runtime and Build Dependencies -->
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>quadros_calibration</depend>
+  <depend>quadros_gpio</depend>
 
   <!-- Testing Dependencies -->
   <test_depend>ament_lint_auto</test_depend>

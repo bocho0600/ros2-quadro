@@ -1,5 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
-#include "quadros_calibration/msg/motor_speed.hpp"
+#include "quadros_gpio/msg/motor_speed.hpp"
 
 #include <array>
 #include <pigpio.h>
@@ -22,7 +22,7 @@ public:
             gpioSetMode(pin, PI_OUTPUT);
         }
 
-        sub_ = this->create_subscription<quadros_calibration::msg::MotorSpeed>(
+        sub_ = this->create_subscription<quadros_gpio::msg::MotorSpeed>(
             "MotorSpeed", 10,
             std::bind(&MotorPwmNode::motor_callback, this, std::placeholders::_1)
         );
@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    void motor_callback(const quadros_calibration::msg::MotorSpeed::SharedPtr msg)
+    void motor_callback(const quadros_gpio::msg::MotorSpeed::SharedPtr msg)
     {
         std::array<float, 4> percentages = {
             msg->motor_speed_1,
@@ -57,7 +57,7 @@ private:
     }
 
     std::array<int, 4> motor_pins_;
-    rclcpp::Subscription<quadros_calibration::msg::MotorSpeed>::SharedPtr sub_;
+    rclcpp::Subscription<quadros_gpio::msg::MotorSpeed>::SharedPtr sub_;
 };
 
 int main(int argc, char **argv)
