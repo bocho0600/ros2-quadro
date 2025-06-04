@@ -1,5 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
-#include "quadros_gpio/msg/motor_speed.hpp"
+#include "quadros_calibration/msg/motor_speed.hpp"
 
 #include <array>
 #include <pigpio.h>
@@ -22,7 +22,7 @@ public:
             gpioSetMode(pin, PI_OUTPUT);
         }
 
-        sub_ = this->create_subscription<quadros_gpio::msg::MotorSpeed>(
+        sub_ = this->create_subscription<quadros_calibration::msg::MotorSpeed>(
             "/quadros/set/motors", 10,
             std::bind(&MotorPwmNode::motor_callback, this, std::placeholders::_1)
         );
@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    void motor_callback(const quadros_gpio::msg::MotorSpeed::SharedPtr msg) // This function tracks the motor speeds
+    void motor_callback(const quadros_calibration::msg::MotorSpeed::SharedPtr msg) // This function tracks the motor speeds
     {
         std::array<float, 4> percentages = {
             msg->motor_speed_1,
@@ -53,10 +53,10 @@ private:
                 float percent = std::clamp(percentages[i], 0.0f, 100.0f);
                 int microseconds = static_cast<int>(1000 + (percent / 100.0f) * 1000); // 1000–2000 µs
                 gpioServo(motor_pins_[i], microseconds);
-                RCLCPP_INFO(this->get_logger(), "ESC[%ld] set to %.1f%% => %d µs", i+1, percent, microseconds);
+                RCLCPP_INFO(this->get_logger(), "ESC[%u] set to %.1f%% => %d µs", static_cast<unsigned int>(i+1), percent, microseconds);
             }
         } else {
-            RCLCPP_INFO(this->get_logger(), "Motors NOT armed, setting to 0%");
+            RCLCPP_INFO(this->get_logger(), "Motors NOT armed");
             for (int pin : motor_pins_) {
                 gpioServo(pin, 0); // Stop signal
             }
@@ -65,7 +65,7 @@ private:
     }
 
     std::array<int, 4> motor_pins_;
-    rclcpp::Subscription<quadros_gpio::msg::MotorSpeed>::SharedPtr sub_;
+    rclcpp::Subscription<quadros_calibration::msg::MotorSpeed>::SharedPtr sub_;
 };
 
 int main(int argc, char **argv)
