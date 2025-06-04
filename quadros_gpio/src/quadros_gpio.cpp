@@ -56,7 +56,7 @@ private:
                 RCLCPP_INFO(this->get_logger(), "ESC[%u] set to %.1f%% => %d µs", static_cast<unsigned int>(i+1), percent, microseconds);
             }
         } else {
-            RCLCPP_INFO(this->get_logger(), "Motors NOT armed, setting to 0%");
+            RCLCPP_INFO(this->get_logger(), "Motors NOT armed");
             for (int pin : motor_pins_) {
                 gpioServo(pin, 0); // Stop signal
             }
