@@ -324,6 +324,8 @@ int main(int argc, char **argv)
 
     auto node = std::make_shared<rclcpp::Node>("motor_calibration_gui"); // Create a ROS2 node
 
+    std::cout << "Node created and GUI starting..." << std::endl;
+
     // Start ROS2 spinning in a background thread
     RosSpinThread ros_thread(node); 
     ros_thread.start(); // Start the thread
