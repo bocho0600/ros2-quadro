@@ -1,5 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
+
 #include "quadros/msg/telemetry.hpp"
+#include "quadros_calibration/msg/motor_speed.hpp"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -8,8 +10,8 @@
 #include <sstream>
 #include <vector>
 #include <chrono> // <-- Add this
-using namespace std::chrono_literals; // <-- And this
-using std::placeholders::_1;
+using namespace std::chrono_literals; // <-- And this for 5ms of delay
+using std::placeholders::_1; 
 
 class UARTReader : public rclcpp::Node
 {
@@ -17,6 +19,12 @@ public:
     UARTReader() : Node("uart_reader")
     {
         publisher_ = this->create_publisher<quadros::msg::Telemetry>("quadros/state/telemetry", 10);
+        motor_subscriber_ = this->create_subscription<quadros_calibration::msg::MotorSpeed>(
+            "quadros/set/motors", 10,
+            std::bind(&UARTReader::motor_callback, this, _1)
+        );
+
+
 
         // Open serial port
         serial_fd_ = open("/dev/serial0", O_RDWR | O_NOCTTY | O_SYNC);
@@ -42,7 +50,7 @@ public:
         tty.c_cc[VTIME] = 1;
         tcsetattr(serial_fd_, TCSANOW, &tty);
 
-        timer_ = this->create_wall_timer(5ms, std::bind(&UARTReader::read_serial, this)); // Set timer to read serial data every 5 milliseconds
+        timer_ = this->create_wall_ticmer(5ms, std::bind(&UARTReader::read_serial, this)); // Set timer to read serial data every 5 milliseconds
     }
 
     ~UARTReader() {
@@ -52,15 +60,32 @@ public:
     }
 
 private:
-
     void write_serial(const std::string &data){
         if (serial_fd_ >= 0) {
             write(serial_fd_, data.c_str(), data.size());
         }
     }
 
-    void read_serial()
+    void motor_callback(const quadros_calibration::msg::MotorSpeed::SharedPtr msg)
     {
+        if (!msg->armed) {
+            RCLCPP_WARN(this->get_logger(), "Motors not armed. Command ignored.");
+            return;
+        }
+
+        std::ostringstream oss;
+        oss << "<MOT," 
+            << static_cast<int>(msg->motor_speed_1) << ","
+            << static_cast<int>(msg->motor_speed_2) << ","
+            << static_cast<int>(msg->motor_speed_3) << ","
+            << static_cast<int>(msg->motor_speed_4) << ">";
+
+        write_serial(oss.str());
+        // RCLCPP_INFO(this->get_logger(), "Sent motor command: %s", oss.str().c_str());
+    }
+
+    void read_serial()
+    {   
         char buf[128];
         int n = read(serial_fd_, buf, sizeof(buf) - 1);
         if (n > 0) {
@@ -86,10 +111,10 @@ private:
                         float roll = std::stof(parts[1]);
                         float pitch = std::stof(parts[2]);
 
-                        auto msg = quadros::msg::Telemetry();
-                        msg.roll_angle = roll;
-                        msg.pitch_angle = pitch;
-                        publisher_->publish(msg);
+                        auto msg_telemetry = quadros::msg::Telemetry();
+                        msg_telemetry.roll_angle = roll;
+                        msg_telemetry.pitch_angle = pitch;
+                        publisher_->publish(msg_telemetry);
                        // RCLCPP_INFO(this->get_logger(), "Published Roll=%.2f, Pitch=%.2f", roll, pitch);
                     } catch (...) {
                        // RCLCPP_WARN(this->get_logger(), "Failed to parse floats from: %s", content.c_str());
@@ -100,9 +125,12 @@ private:
     }
 
     rclcpp::Publisher<quadros::msg::Telemetry>::SharedPtr publisher_;
+    rclcpp::Subscription<quadros_calibration::msg::MotorSpeed>::SharedPtr motor_subscriber_;
     rclcpp::TimerBase::SharedPtr timer_;
     int serial_fd_;
 };
+
+
 
 int main(int argc, char *argv[])
 {

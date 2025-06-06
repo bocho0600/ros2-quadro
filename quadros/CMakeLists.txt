@@ -10,13 +10,23 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(quadros_calibration REQUIRED)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Telemetry.msg"
 )
 ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(uart_reader src/uart_reader.cpp)
-ament_target_dependencies(uart_reader rclcpp std_msgs)
+
+ament_target_dependencies(uart_reader 
+  rclcpp 
+  std_msgs 
+  quadros_calibration
+)
+
+
+
 rosidl_target_interfaces(uart_reader
   ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
