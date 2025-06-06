@@ -42,7 +42,7 @@ public:
         tty.c_cc[VTIME] = 1;
         tcsetattr(serial_fd_, TCSANOW, &tty);
 
-        timer_ = this->create_wall_timer(5ms, std::bind(&UARTReader::read_serial, this));
+        timer_ = this->create_wall_timer(5ms, std::bind(&UARTReader::read_serial, this)); // Set timer to read serial data every 5 milliseconds
     }
 
     ~UARTReader() {
@@ -52,6 +52,13 @@ public:
     }
 
 private:
+
+    void write_serial(const std::string &data){
+        if (serial_fd_ >= 0) {
+            write(serial_fd_, data.c_str(), data.size());
+        }
+    }
+
     void read_serial()
     {
         char buf[128];
@@ -83,9 +90,9 @@ private:
                         msg.roll_angle = roll;
                         msg.pitch_angle = pitch;
                         publisher_->publish(msg);
-                        RCLCPP_INFO(this->get_logger(), "Published Roll=%.2f, Pitch=%.2f", roll, pitch);
+                       // RCLCPP_INFO(this->get_logger(), "Published Roll=%.2f, Pitch=%.2f", roll, pitch);
                     } catch (...) {
-                        RCLCPP_WARN(this->get_logger(), "Failed to parse floats from: %s", content.c_str());
+                       // RCLCPP_WARN(this->get_logger(), "Failed to parse floats from: %s", content.c_str());
                     }
                 }
             }
@@ -100,7 +107,7 @@ private:
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<UARTReader>());
-    rclcpp::shutdown();
+    rclcpp::spin(std::make_shared<UARTReader>()); // Run the node
+    rclcpp::shutdown(); // Clean up and exit after spinning
     return 0;
 }
