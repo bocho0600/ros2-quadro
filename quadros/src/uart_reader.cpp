@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 #include <chrono> // <-- Add this
+#include <iomanip> // Add this at the top for std::setprecision
 using namespace std::chrono_literals; // <-- And this for 5ms of delay
 using std::placeholders::_1; 
 
@@ -46,11 +47,11 @@ public:
         tty.c_cflag &= ~CRTSCTS;         // No flow control
         tty.c_lflag = 0;                 // No canonical mode
         tty.c_oflag = 0;                 // No remapping
-        tty.c_cc[VMIN] = 1;
-        tty.c_cc[VTIME] = 1;
+        tty.c_cc[VMIN] = 0;
+        tty.c_cc[VTIME] = 0;
         tcsetattr(serial_fd_, TCSANOW, &tty);
 
-        timer_ = this->create_wall_ticmer(5ms, std::bind(&UARTReader::read_serial, this)); // Set timer to read serial data every 5 milliseconds
+        timer_ = this->create_wall_timer(5ms, std::bind(&UARTReader::read_serial, this)); // Set timer to read serial data every 5 milliseconds
     }
 
     ~UARTReader() {
@@ -68,13 +69,10 @@ private:
 
     void motor_callback(const quadros_calibration::msg::MotorSpeed::SharedPtr msg)
     {
-        if (!msg->armed) {
-            RCLCPP_WARN(this->get_logger(), "Motors not armed. Command ignored.");
-            return;
-        }
-
+        int arm_flag = msg->armed ? true : false; // This will still convert to 1 or 0 in output
         std::ostringstream oss;
         oss << "<MOT," 
+            <<  arm_flag << ","
             << static_cast<int>(msg->motor_speed_1) << ","
             << static_cast<int>(msg->motor_speed_2) << ","
             << static_cast<int>(msg->motor_speed_3) << ","
@@ -108,16 +106,19 @@ private:
 
                 if (parts.size() == 3 && parts[0] == "TEL") {
                     try {
+                        // Parse as float, then truncate to 2 decimals
                         float roll = std::stof(parts[1]);
                         float pitch = std::stof(parts[2]);
+                        // Truncate to 2 decimals
+                        roll = std::floor(roll * 100.0f) / 100.0f;
+                        pitch = std::floor(pitch * 100.0f) / 100.0f;
 
                         auto msg_telemetry = quadros::msg::Telemetry();
                         msg_telemetry.roll_angle = roll;
                         msg_telemetry.pitch_angle = pitch;
                         publisher_->publish(msg_telemetry);
-                       // RCLCPP_INFO(this->get_logger(), "Published Roll=%.2f, Pitch=%.2f", roll, pitch);
                     } catch (...) {
-                       // RCLCPP_WARN(this->get_logger(), "Failed to parse floats from: %s", content.c_str());
+                        // RCLCPP_WARN(this->get_logger(), "Failed to parse floats from: %s", content.c_str());
                     }
                 }
             }
