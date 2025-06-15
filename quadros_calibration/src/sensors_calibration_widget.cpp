@@ -12,4 +12,3 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     layout->addWidget(label);
     setLayout(layout);
 };
-#include "sensors_calibration_widget.moc"

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <QDialog>
 #include <QWidget>
 #include <QSlider>
 #include <QCheckBox>
@@ -34,3 +34,5 @@ private:
     rclcpp::Publisher<quadros_calibration::msg::MotorSpeed>::SharedPtr publisher_;
     QTimer *timer_;
 };
+
+// #include "calibration_dialog.moc"

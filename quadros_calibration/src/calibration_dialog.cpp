@@ -1,70 +1,60 @@
-class CalibrationDialog : public QDialog {
-    Q_OBJECT
-public:
-    explicit CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget *parent = nullptr)
-        : QDialog(parent), node_(node)
-    {
-        setWindowTitle("Quadro UAV Calibration Tools");
-        resize(800, 500);
+#include "quadros_calibration/calibration_dialog.hpp"
 
-        QHBoxLayout *main_layout = new QHBoxLayout();
+CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget *parent)
+    : QDialog(parent), node_(node)
+{
+    setWindowTitle("Quadro UAV Calibration Tools");
+    resize(800, 500);
 
-        // Sidebar menu
-        menu_ = new QListWidget();
-        menu_->setFixedWidth(180);
-        menu_->addItem(new QListWidgetItem("Motor Calibration"));
-        menu_->addItem(new QListWidgetItem("Sensors Calibration"));
-        menu_->addItem(new QListWidgetItem("Baterry"));
-        connect(menu_, &QListWidget::currentRowChanged, this, &CalibrationDialog::switchMode);
+    QHBoxLayout *main_layout = new QHBoxLayout();
 
-        // Stacked layout for content
-        stack_ = new QStackedLayout();
-        motor_widget_ = new MotorCalibrationWidget();
-        sensor_widget_ = new SensorsCalibrationWidget();
-        stack_->addWidget(motor_widget_);
-        stack_->addWidget(sensor_widget_);
+    // Sidebar menu
+    menu_ = new QListWidget();
+    menu_->setFixedWidth(180);
+    menu_->addItem(new QListWidgetItem("Motor Calibration"));
+    menu_->addItem(new QListWidgetItem("Sensors Calibration"));
+    menu_->addItem(new QListWidgetItem("Baterry"));
+    connect(menu_, &QListWidget::currentRowChanged, this, &CalibrationDialog::switchMode);
 
-        QWidget *content_widget = new QWidget();
-        content_widget->setLayout(stack_);
+    // Stacked layout for content
+    stack_ = new QStackedLayout();
+    motor_widget_ = new MotorCalibrationWidget();
+    sensor_widget_ = new SensorsCalibrationWidget();
+    stack_->addWidget(motor_widget_);
+    stack_->addWidget(sensor_widget_);
 
-        main_layout->addWidget(menu_);
-        main_layout->addWidget(content_widget);
+    QWidget *content_widget = new QWidget();
+    content_widget->setLayout(stack_);
 
-        setLayout(main_layout);
+    main_layout->addWidget(menu_);
+    main_layout->addWidget(content_widget);
 
-        // ROS2 publisher
-        publisher_ = node_->create_publisher<quadros_calibration::msg::MotorSpeed>("/quadros/set/motors", 10);
+    setLayout(main_layout);
 
-        // Timer for periodic publishing
-        timer_ = new QTimer(this);
-        connect(timer_, &QTimer::timeout, this, &CalibrationDialog::publishMotorSpeeds);
-        timer_->start(100); // 100 ms
-    }
+    // ROS2 publisher
+    publisher_ = node_->create_publisher<quadros_calibration::msg::MotorSpeed>("/quadros/set/motors", 10);
 
-private slots:
-    void switchMode(int index) {
-        stack_->setCurrentIndex(index);
-    }
+    // Timer for periodic publishing
+    timer_ = new QTimer(this);
+    connect(timer_, &QTimer::timeout, this, &CalibrationDialog::publishMotorSpeeds);
+    timer_->start(100); // 100 ms
+}
 
-    void publishMotorSpeeds() {
-        if (stack_->currentIndex() != 0) return; // Only publish in Motor Calibration tab
+void CalibrationDialog::switchMode(int index) {
+    stack_->setCurrentIndex(index);
+}
 
-        auto speeds = motor_widget_->getMotorSpeeds();
-        quadros_calibration::msg::MotorSpeed msg; // Create a new message instance
-        msg.armed = motor_widget_->isArmed();  // <-- Set the armed field
-        msg.motor_speed_1 = speeds[0];
-        msg.motor_speed_2 = speeds[1];
-        msg.motor_speed_3 = speeds[2];
-        msg.motor_speed_4 = speeds[3];
-        publisher_->publish(msg);
-    }
+void CalibrationDialog::publishMotorSpeeds() {
+    if (stack_->currentIndex() != 0) return; // Only publish in Motor Calibration tab
 
-private:
-    QListWidget *menu_;
-    QStackedLayout *stack_;
-    MotorCalibrationWidget *motor_widget_;
-    SensorsCalibrationWidget *sensor_widget_;
-    std::shared_ptr<rclcpp::Node> node_;
-    rclcpp::Publisher<quadros_calibration::msg::MotorSpeed>::SharedPtr publisher_;
-    QTimer *timer_;
-};
+    auto speeds = motor_widget_->getMotorSpeeds();
+    quadros_calibration::msg::MotorSpeed msg; // Create a new message instance
+    msg.armed = motor_widget_->isArmed();  // <-- Set the armed field
+    msg.motor_speed_1 = speeds[0];
+    msg.motor_speed_2 = speeds[1];
+    msg.motor_speed_3 = speeds[2];
+    msg.motor_speed_4 = speeds[3];
+    publisher_->publish(msg);
+}
+
+
