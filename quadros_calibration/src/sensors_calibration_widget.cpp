@@ -4,6 +4,9 @@
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QTimer>
+#include <QLabel>
+#include <QCheckBox>
+#include <QPushButton>
 #include <cmath>  // For sin(), cos()
 
 SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
@@ -42,15 +45,46 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     line->setFrameShadow(QFrame::Sunken);
     line->setLineWidth(2);
 
-    // === Right: Placeholder Layout (Future Use) ===
+    // === Right: Control Panel ===
     QVBoxLayout *rightLayout = new QVBoxLayout();
-    rightLayout->addSpacing(40); // Optional content space
-    rightLayout->addStretch();   // Push contents to top
+
+    // Mode Label
+    modeLabel_ = new QLabel("Mode: Simulation", this);
+    modeLabel_->setAlignment(Qt::AlignCenter);
+    QFont labelFont = modeLabel_->font();
+    labelFont.setPointSize(12);
+    labelFont.setBold(true);
+    modeLabel_->setFont(labelFont);
+
+    // Live Sensor Data Switch
+    liveDataCheckBox_ = new QCheckBox("Live Sensor Data", this);
+    liveDataCheckBox_->setToolTip("Toggle between simulated and live IMU data");
+    connect(liveDataCheckBox_, &QCheckBox::toggled, this, &SensorsCalibrationWidget::onLiveDataToggled);
+
+    // Calibrate Button
+    QPushButton *calibrateButton = new QPushButton("Calibrate", this);
+    calibrateButton->setFixedSize(120, 40);
+
+    // Center the button horizontally
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(calibrateButton);
+    buttonLayout->addStretch();
+
+    // Add widgets to the right layout
+    rightLayout->addWidget(modeLabel_);
+    rightLayout->addWidget(liveDataCheckBox_);
+    rightLayout->addSpacing(40);
+    rightLayout->addLayout(buttonLayout);  // Centered button
+    rightLayout->addStretch();  // Push remaining content to the top
 
     // === Assemble Layout ===
     mainLayout->addLayout(plotLayout);
     mainLayout->addWidget(line);
-    mainLayout->addLayout(rightLayout);
+    QWidget *rightWidget = new QWidget();
+    rightWidget->setLayout(rightLayout);
+    rightWidget->setMaximumWidth(200);  // Adjust width as needed (e.g., 200 pixels)
+    mainLayout->addWidget(rightWidget);
     setLayout(mainLayout);
 
     // === Timer Setup ===
@@ -66,10 +100,18 @@ void SensorsCalibrationWidget::updatePlot()
     const double frequency = 1.0;
 
     QVector<double> x(nPoints), yPitch(nPoints), yRoll(nPoints);
+
     for (int i = 0; i < nPoints; ++i) {
         x[i] = i * dt;
-        yPitch[i] = 45 * sin(2 * M_PI * frequency * x[i] + phase_);  // Simulated pitch
-        yRoll[i] = 30 * cos(2 * M_PI * frequency * x[i] + phase_);   // Simulated roll
+
+        if (liveDataCheckBox_->isChecked()) {
+            // Placeholder: In a real app, replace with sensor input
+            yPitch[i] = 10;  // Constant dummy values for now
+            yRoll[i] = -10;
+        } else {
+            yPitch[i] = 45 * sin(2 * M_PI * frequency * x[i] + phase_);  // Simulated pitch
+            yRoll[i] = 30 * cos(2 * M_PI * frequency * x[i] + phase_);   // Simulated roll
+        }
     }
 
     plotPitch_->graph(0)->setData(x, yPitch);
@@ -81,4 +123,9 @@ void SensorsCalibrationWidget::updatePlot()
     phase_ += 0.1;
     if (phase_ > 2 * M_PI)
         phase_ -= 2 * M_PI;
+}
+
+void SensorsCalibrationWidget::onLiveDataToggled(bool checked)
+{
+    modeLabel_->setText(checked ? "Mode: Live Sensor" : "Mode: Simulation");
 }
