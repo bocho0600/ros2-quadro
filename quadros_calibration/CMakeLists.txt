@@ -25,12 +25,26 @@ include_directories(
 ament_export_dependencies(rosidl_default_runtime)
 
 # Add executable after message generation and export dependencies
-add_executable(calibration_gui src/calibration_gui.cpp)
+add_executable(calibration_gui 
+      src/calibration_gui.cpp
+      src/sensors_calibration_widget.cpp
+      include/quadros_calibration/sensors_calibration_widget.hpp  # <- ADD THIS
+
+      )
 ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets )
 rosidl_target_interfaces(calibration_gui ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 target_link_libraries(calibration_gui ${rosidl_typesupport_target})
 target_link_libraries(calibration_gui Qt5::Widgets)
+target_include_directories(calibration_gui PRIVATE # Include directories for the target
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+set_target_properties(calibration_gui PROPERTIES
+  AUTOMOC ON
+  AUTOUIC ON
+  AUTORCC ON
+)
 
 install(TARGETS
   calibration_gui

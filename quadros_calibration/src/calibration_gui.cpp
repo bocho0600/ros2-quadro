@@ -15,7 +15,11 @@
 #include <memory>
 #include <QCheckBox>
 
+#include "quadros_calibration/sensors_calibration_widget.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+
+
 #include "quadros_calibration/msg/motor_speed.hpp"
 
 class MotorCalibrationWidget : public QWidget {
@@ -219,20 +223,7 @@ private:
     bool armed_;
 };
 
-class SensorsCalibrationWidget : public QWidget {
-    Q_OBJECT
-public:
-    explicit SensorsCalibrationWidget(QWidget *parent = nullptr)
-        : QWidget(parent)
-    {
-        QVBoxLayout *layout = new QVBoxLayout();
-        QLabel *label = new QLabel("Sensor Calibration Placeholder");
-        label->setAlignment(Qt::AlignCenter);
-        label->setStyleSheet("font-size: 16pt; font-style: italic;");
-        layout->addWidget(label);
-        setLayout(layout);
-    }
-};
+
 
 class CalibrationDialog : public QDialog {
     Q_OBJECT
