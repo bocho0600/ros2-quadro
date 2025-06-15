@@ -12,7 +12,8 @@ private slots:
     void updatePlot();  // Slot for timer updates
 
 private:
-    QCustomPlot *plot_;
+    QCustomPlot *plotPitch_;
+    QCustomPlot *plotRoll_;
     QTimer *timer_;    // Timer for dynamic updates
     double phase_ = 0; // Tracks sine wave phase
 };
