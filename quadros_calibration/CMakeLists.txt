@@ -10,6 +10,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(quadros REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -26,7 +27,7 @@ ament_export_dependencies(rosidl_default_runtime)
 
 # Add executable after message generation and export dependencies
 add_executable(calibration_gui 
-      src/calibration_gui.cpp
+      src/main.cpp
       src/sensors_calibration_widget.cpp
       src/motor_calibration_widget.cpp
       src/calibration_dialog.cpp
@@ -34,7 +35,7 @@ add_executable(calibration_gui
       include/quadros_calibration/motor_calibration_widget.hpp
       include/quadros_calibration/calibration_dialog.hpp
       )
-ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets )
+ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets quadros)
 rosidl_target_interfaces(calibration_gui ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 target_link_libraries(calibration_gui ${rosidl_typesupport_target})

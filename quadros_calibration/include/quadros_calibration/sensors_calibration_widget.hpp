@@ -17,7 +17,7 @@
 class SensorsCalibrationWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit SensorsCalibrationWidget(QWidget *parent = nullptr);
+    explicit SensorsCalibrationWidget(QWidget *parent = nullptr); // input is a pointer to the parent widget
 };
 
 #include "sensors_calibration_widget.moc"

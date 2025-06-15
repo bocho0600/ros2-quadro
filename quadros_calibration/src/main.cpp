@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
 
-    QApplication app(argc, argv);
+    QApplication app(argc, argv); //
 
     auto node = std::make_shared<rclcpp::Node>("motor_calibration_gui"); // Create a ROS2 node
 
@@ -59,4 +59,4 @@ int main(int argc, char **argv)
     return ret;
 }
 
-#include "calibration_gui.moc"
+#include "main.moc"

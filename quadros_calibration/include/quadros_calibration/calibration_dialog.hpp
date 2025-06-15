@@ -28,8 +28,8 @@ private slots:
 private:
     QListWidget *menu_;
     QStackedLayout *stack_;
-    MotorCalibrationWidget *motor_widget_;
-    SensorsCalibrationWidget *sensor_widget_;
+    MotorCalibrationWidget *motor_widget_; // instance of MotorCalibrationWidget
+    SensorsCalibrationWidget *sensor_widget_;   // instance of SensorsCalibrationWidget
     std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Publisher<quadros_calibration::msg::MotorSpeed>::SharedPtr publisher_;
     QTimer *timer_;

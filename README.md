@@ -10,3 +10,6 @@ sudo bash -c "source /opt/ros/humble/setup.bash && source /home/quadro/ros2_ws/i
 
 
 source /opt/ros/humble/setup.bash && source ros2_ws/install/setup.bash && ros2 topic echo /quadros/set/motors
+
+
+source /opt/ros/humble/setup.bash && source ros2_ws/install/setup.bash
