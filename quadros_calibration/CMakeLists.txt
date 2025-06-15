@@ -28,7 +28,9 @@ ament_export_dependencies(rosidl_default_runtime)
 add_executable(calibration_gui 
       src/calibration_gui.cpp
       src/sensors_calibration_widget.cpp
+      src/motor_calibration_widget.cpp
       include/quadros_calibration/sensors_calibration_widget.hpp  # <- ADD THIS
+      include/quadros_calibration/motor_calibration_widget.hpp
 
       )
 ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets )
