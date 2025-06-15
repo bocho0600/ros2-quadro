@@ -1,23 +1,18 @@
 #pragma once
 #include <QWidget>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QSlider>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QPushButton>
-#include <QStackedLayout>
 #include <QTimer>
-#include <QCheckBox>
-#include <array>
-#include <memory>
-#include "rclcpp/rclcpp.hpp"
-//#include "sensor_calibration_widget.moc"
+#include "quadros_calibration/qcustomplot.hpp"
+
 class SensorsCalibrationWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit SensorsCalibrationWidget(QWidget *parent = nullptr); // input is a pointer to the parent widget
-};
+    explicit SensorsCalibrationWidget(QWidget *parent = nullptr);
 
-#include "sensors_calibration_widget.moc"
+private slots:
+    void updatePlot();  // Slot for timer updates
+
+private:
+    QCustomPlot *plot_;
+    QTimer *timer_;    // Timer for dynamic updates
+    double phase_ = 0; // Tracks sine wave phase
+};
