@@ -106,8 +106,8 @@ void SensorsCalibrationWidget::updatePlot()
 
         if (liveDataCheckBox_->isChecked()) {
             // Placeholder: In a real app, replace with sensor input
-            yPitch[i] = 10;  // Constant dummy values for now
-            yRoll[i] = -10;
+            yPitch[i] = latestPitch_;  // Constant dummy values for now
+            yRoll[i] = latestRoll_;
         } else {
             yPitch[i] = 45 * sin(2 * M_PI * frequency * x[i] + phase_);  // Simulated pitch
             yRoll[i] = 30 * cos(2 * M_PI * frequency * x[i] + phase_);   // Simulated roll
@@ -128,4 +128,11 @@ void SensorsCalibrationWidget::updatePlot()
 void SensorsCalibrationWidget::onLiveDataToggled(bool checked)
 {
     modeLabel_->setText(checked ? "Mode: Live Sensor" : "Mode: Simulation");
+}
+
+
+void SensorsCalibrationWidget::setLiveAngles(double pitch, double roll)
+{
+    latestPitch_ = pitch;
+    latestRoll_ = roll;
 }

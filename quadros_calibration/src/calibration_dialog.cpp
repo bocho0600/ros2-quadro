@@ -33,11 +33,21 @@ CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget
 
     // ROS2 publisher
     publisher_ = node_->create_publisher<quadros_calibration::msg::MotorSpeed>("/quadros/set/motors", 10);
-
+    telemetry_sub_ = node_->create_subscription<quadros::msg::Telemetry>(
+        "/quadros/state/telemetry", 10,
+        std::bind(&CalibrationDialog::onTelemetryReceived, this, std::placeholders::_1)
+    );
     // Timer for periodic publishing
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, &CalibrationDialog::publishMotorSpeeds);
     timer_->start(100); // 100 ms
+}
+
+void CalibrationDialog::onTelemetryReceived(const quadros::msg::Telemetry::SharedPtr msg)
+{
+    float roll = msg->roll_angle;
+    float pitch = msg->pitch_angle;
+    sensor_widget_->setLiveAngles(pitch, roll);
 }
 
 void CalibrationDialog::switchMode(int index) {

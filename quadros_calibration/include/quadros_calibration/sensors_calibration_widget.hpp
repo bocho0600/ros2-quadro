@@ -12,6 +12,7 @@ class SensorsCalibrationWidget : public QWidget
 
 public:
     explicit SensorsCalibrationWidget(QWidget *parent = nullptr);
+    void setLiveAngles(double pitch, double roll);
 
 private slots:
     void updatePlot();
@@ -25,6 +26,8 @@ private:
 
     QCheckBox *liveDataCheckBox_;
     QPushButton *calibrateButton_;
-    
+    // ...existing members...
+    double latestPitch_ = 0.0;
+    double latestRoll_ = 0.0;
     QLabel *modeLabel_;
 };
