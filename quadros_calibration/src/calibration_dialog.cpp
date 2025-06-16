@@ -10,10 +10,10 @@ CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget
 
     // Sidebar menu
     menu_ = new QListWidget();
-    menu_->setFixedWidth(130);
-    menu_->addItem(new QListWidgetItem("Motor Calibration"));
+    menu_->setFixedWidth(150);
+    menu_->addItem(new QListWidgetItem("Motor Control"));
     menu_->addItem(new QListWidgetItem("Sensors Calibration"));
-    menu_->addItem(new QListWidgetItem("Baterry"));
+    menu_->addItem(new QListWidgetItem("Baterry Status"));
     connect(menu_, &QListWidget::currentRowChanged, this, &CalibrationDialog::switchMode);
 
     // Stacked layout for content

@@ -30,4 +30,9 @@ private:
     double latestPitch_ = 0.0;
     double latestRoll_ = 0.0;
     QLabel *modeLabel_;
+
+    QVector<double> pitchBuffer_;
+    QVector<double> rollBuffer_;
+    QVector<double> timeBuffer_;
+    double time_;
 };

@@ -10,7 +10,7 @@
 #include <cmath>  // For sin(), cos()
 
 SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
-    : QWidget(parent), phase_(0.0)
+    : QWidget(parent), phase_(0.0), time_(0.0)
 {
     // === Main Horizontal Layout ===
     QHBoxLayout *mainLayout = new QHBoxLayout();
@@ -91,38 +91,52 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, &SensorsCalibrationWidget::updatePlot);
     timer_->start(10);  // 100 FPS (10ms interval)
+
+    const int nPoints = 100;
+    const double dt = 10.0 / (nPoints - 1); // 0.10101... so last point is exactly 10.0
+    pitchBuffer_ = QVector<double>(nPoints, 0.0);
+    rollBuffer_ = QVector<double>(nPoints, 0.0);
+    timeBuffer_.resize(nPoints);
+    for (int i = 0; i < nPoints; ++i) timeBuffer_[i] = i * dt;
+
+    plotPitch_->xAxis->setRange(0, 10);
+    plotRoll_->xAxis->setRange(0, 10);
 }
 
 void SensorsCalibrationWidget::updatePlot()
 {
     const int nPoints = 100;
-    const double dt = 10.0 / nPoints;
-    const double frequency = 1.0;
 
-    QVector<double> x(nPoints), yPitch(nPoints), yRoll(nPoints);
-
-    for (int i = 0; i < nPoints; ++i) {
-        x[i] = i * dt;
-
-        if (liveDataCheckBox_->isChecked()) {
-            // Placeholder: In a real app, replace with sensor input
-            yPitch[i] = latestPitch_;  // Constant dummy values for now
-            yRoll[i] = latestRoll_;
-        } else {
-            yPitch[i] = 45 * sin(2 * M_PI * frequency * x[i] + phase_);  // Simulated pitch
-            yRoll[i] = 30 * cos(2 * M_PI * frequency * x[i] + phase_);   // Simulated roll
+    if (liveDataCheckBox_->isChecked()) {
+        // Shift buffer left
+        for (int i = 0; i < nPoints - 1; ++i) {
+            pitchBuffer_[i] = pitchBuffer_[i + 1];
+            rollBuffer_[i] = rollBuffer_[i + 1];
         }
+        // Add new value at the end
+        pitchBuffer_[nPoints - 1] = latestPitch_;
+        rollBuffer_[nPoints - 1] = latestRoll_;
+
+        // X axis is fixed: timeBuffer_ = [0, ..., 10]
+        plotPitch_->graph(0)->setData(timeBuffer_, pitchBuffer_);
+        plotRoll_->graph(0)->setData(timeBuffer_, rollBuffer_);
+    } else {
+        QVector<double> x(nPoints), yPitch(nPoints), yRoll(nPoints);
+        const double dt = 10.0 / (nPoints - 1);
+        for (int i = 0; i < nPoints; ++i) {
+            x[i] = i * dt;
+            yPitch[i] = 45 * sin(2 * M_PI * 1.0 * x[i] + phase_);
+            yRoll[i] = 30 * cos(2 * M_PI * 1.0 * x[i] + phase_);
+        }
+        plotPitch_->graph(0)->setData(x, yPitch);
+        plotRoll_->graph(0)->setData(x, yRoll);
+        phase_ += 0.1;
+        if (phase_ > 2 * M_PI)
+            phase_ -= 2 * M_PI;
     }
 
-    plotPitch_->graph(0)->setData(x, yPitch);
     plotPitch_->replot();
-
-    plotRoll_->graph(0)->setData(x, yRoll);
     plotRoll_->replot();
-
-    phase_ += 0.1;
-    if (phase_ > 2 * M_PI)
-        phase_ -= 2 * M_PI;
 }
 
 void SensorsCalibrationWidget::onLiveDataToggled(bool checked)
