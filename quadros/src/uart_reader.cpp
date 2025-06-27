@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "quadros/msg/telemetry.hpp"
-#include "quadros_calibration/msg/motor_speed.hpp"
+#include "quadros/msg/motor_speed.hpp"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -20,7 +20,7 @@ public:
     UARTReader() : Node("uart_reader")
     {
         publisher_ = this->create_publisher<quadros::msg::Telemetry>("quadros/state/telemetry", 10);
-        motor_subscriber_ = this->create_subscription<quadros_calibration::msg::MotorSpeed>(
+        motor_subscriber_ = this->create_subscription<quadros::msg::MotorSpeed>(
             "quadros/set/motors", 10,
             std::bind(&UARTReader::motor_callback, this, _1)
         );
@@ -67,7 +67,7 @@ private:
         }
     }
 
-    void motor_callback(const quadros_calibration::msg::MotorSpeed::SharedPtr msg)
+    void motor_callback(const quadros::msg::MotorSpeed::SharedPtr msg)
     {
         int arm_flag = msg->armed ? true : false; // This will still convert to 1 or 0 in output
         std::ostringstream oss;
@@ -126,7 +126,7 @@ private:
     }
 
     rclcpp::Publisher<quadros::msg::Telemetry>::SharedPtr publisher_;
-    rclcpp::Subscription<quadros_calibration::msg::MotorSpeed>::SharedPtr motor_subscriber_;
+    rclcpp::Subscription<quadros::msg::MotorSpeed>::SharedPtr motor_subscriber_;
     rclcpp::TimerBase::SharedPtr timer_;
     int serial_fd_;
 };
