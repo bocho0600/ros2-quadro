@@ -17,7 +17,7 @@ using std::placeholders::_1;
 class UARTReader : public rclcpp::Node
 {
 public:
-    UARTReader() : Node("uart_reader")
+    UARTReader() : Node("quadros")
     {
         publisher_ = this->create_publisher<quadros::msg::Telemetry>("quadros/state/telemetry", 10);
         motor_subscriber_ = this->create_subscription<quadros::msg::MotorSpeed>(
