@@ -18,7 +18,7 @@
 #include "quadros_calibration/sensors_calibration_widget.hpp"
 #include "quadros_calibration/motor_calibration_widget.hpp"
 #include "quadros_calibration/calibration_dialog.hpp"
-#include "quadros_calibration/msg/motor_speed.hpp"
+#include "quadros/msg/motor_speed.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 

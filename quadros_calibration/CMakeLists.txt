@@ -14,10 +14,6 @@ find_package(quadros REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/MotorSpeed.msg"
-  DEPENDENCIES std_msgs
-)
 include_directories(
   include
   ${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp
@@ -38,7 +34,8 @@ add_executable(calibration_gui
       include/quadros_calibration/qcustomplot.hpp
       )
 ament_target_dependencies(calibration_gui rclcpp std_msgs Qt5Widgets quadros)
-rosidl_target_interfaces(calibration_gui ${PROJECT_NAME} "rosidl_typesupport_cpp")
+# rosidl_target_interfaces is not needed for this executable and causes an error
+# rosidl_target_interfaces(calibration_gui ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 target_link_libraries(calibration_gui ${rosidl_typesupport_target})
 target_link_libraries(calibration_gui

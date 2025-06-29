@@ -8,7 +8,6 @@
 #include <QLabel>
 #include <QFrame>
 #include <array>
-#include "quadros_calibration/msg/motor_speed.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 

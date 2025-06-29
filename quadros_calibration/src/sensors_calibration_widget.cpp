@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QLineEdit>
+#include <QDoubleSpinBox>
 #include <cmath>  // For sin(), cos()
 
 SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
@@ -48,34 +50,115 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     // === Right: Control Panel ===
     QVBoxLayout *rightLayout = new QVBoxLayout();
 
-    // Mode Label
-    modeLabel_ = new QLabel("Mode: Simulation", this);
-    modeLabel_->setAlignment(Qt::AlignCenter);
-    QFont labelFont = modeLabel_->font();
-    labelFont.setPointSize(12);
-    labelFont.setBold(true);
-    modeLabel_->setFont(labelFont);
+    // Helper lambda to create a PID row for a given label and default values
+    auto createPidSection = [this](const QString &title, double pDefault, double iDefault, double dDefault) {
+        QVBoxLayout *sectionLayout = new QVBoxLayout();
+        QLabel *sectionLabel = new QLabel(title, this);
+        sectionLabel->setAlignment(Qt::AlignCenter);
+        QFont sectionFont = sectionLabel->font();
+        sectionFont.setBold(true);
+        sectionLabel->setFont(sectionFont);
+        sectionLayout->addWidget(sectionLabel);
+        QHBoxLayout *pidLayout = new QHBoxLayout();
+        QVBoxLayout *pLayout = new QVBoxLayout();
+        QLabel *pLabel = new QLabel("P", this);
+        QDoubleSpinBox *pSpin = new QDoubleSpinBox(this);
+        pSpin->setRange(-10000.0, 10000.0);
+        pSpin->setDecimals(2);
+        pSpin->setSingleStep(0.01);
+        pSpin->setFixedWidth(60);
+        pSpin->setValue(pDefault);
+        pLayout->addWidget(pLabel);
+        pLayout->addWidget(pSpin);
+        QVBoxLayout *iLayout = new QVBoxLayout();
+        QLabel *iLabel = new QLabel("I", this);
+        QDoubleSpinBox *iSpin = new QDoubleSpinBox(this);
+        iSpin->setRange(-10000.0, 10000.0);
+        iSpin->setDecimals(2);
+        iSpin->setSingleStep(0.01);
+        iSpin->setFixedWidth(60);
+        iSpin->setValue(iDefault);
+        iLayout->addWidget(iLabel);
+        iLayout->addWidget(iSpin);
+        QVBoxLayout *dLayout = new QVBoxLayout();
+        QLabel *dLabel = new QLabel("D", this);
+        QDoubleSpinBox *dSpin = new QDoubleSpinBox(this);
+        dSpin->setRange(-10000.0, 10000.0);
+        dSpin->setDecimals(2);
+        dSpin->setSingleStep(0.01);
+        dSpin->setFixedWidth(60);
+        dSpin->setValue(dDefault);
+        dLayout->addWidget(dLabel);
+        dLayout->addWidget(dSpin);
+        pidLayout->addLayout(pLayout);
+        pidLayout->addLayout(iLayout);
+        pidLayout->addLayout(dLayout);
+        pidLayout->addStretch();
+        sectionLayout->addLayout(pidLayout);
+        return sectionLayout;
+    };
 
-    // Live Sensor Data Switch
-    liveDataCheckBox_ = new QCheckBox("Live Sensor Data", this);
-    liveDataCheckBox_->setToolTip("Toggle between simulated and live IMU data");
-    connect(liveDataCheckBox_, &QCheckBox::toggled, this, &SensorsCalibrationWidget::onLiveDataToggled);
+    // Add Roll, Pitch, Yaw PID sections with lines between them and default values
+    rightLayout->addSpacing(10);
+    rightLayout->addLayout(createPidSection("Roll", 0.6, 3.5, 0.03));
+    QFrame *line1 = new QFrame();
+    line1->setFrameShape(QFrame::HLine);
+    line1->setFrameShadow(QFrame::Sunken);
+    rightLayout->addWidget(line1);
+    rightLayout->addLayout(createPidSection("Pitch", 0.6, 3.5, 0.03));
+    QFrame *line2 = new QFrame();
+    line2->setFrameShape(QFrame::HLine);
+    line2->setFrameShadow(QFrame::Sunken);
+    rightLayout->addWidget(line2);
+    rightLayout->addLayout(createPidSection("Yaw", 2.0, 12.0, 0.0));
+    rightLayout->addSpacing(20);
+    QFrame *line3 = new QFrame();
+    line3->setFrameShape(QFrame::HLine);
+    line3->setFrameShadow(QFrame::Sunken);
+    rightLayout->addWidget(line3);
+
+    // Kalman Filter Section
+    QLabel *kalmanLabel = new QLabel("Kalman Filter", this);
+    kalmanLabel->setAlignment(Qt::AlignCenter);
+    QFont kalmanFont = kalmanLabel->font();
+    kalmanFont.setBold(true);
+    kalmanLabel->setFont(kalmanFont);
+    rightLayout->addWidget(kalmanLabel);
+    QHBoxLayout *kalmanLayout = new QHBoxLayout();
+    QVBoxLayout *qLayout = new QVBoxLayout();
+    QLabel *qLabel = new QLabel("Q", this);
+    kalmanQSpin_ = new QDoubleSpinBox(this);
+    kalmanQSpin_->setRange(0.0, 10000.0);
+    kalmanQSpin_->setDecimals(2);
+    kalmanQSpin_->setSingleStep(0.01);
+    kalmanQSpin_->setFixedWidth(60);
+    kalmanQSpin_->setValue(1.0); // Default value for Q
+    qLayout->addWidget(qLabel);
+    qLayout->addWidget(kalmanQSpin_);
+    QVBoxLayout *rLayout = new QVBoxLayout();
+    QLabel *rLabel = new QLabel("R", this);
+    kalmanRSpin_ = new QDoubleSpinBox(this);
+    kalmanRSpin_->setRange(0.0, 10000.0);
+    kalmanRSpin_->setDecimals(2);
+    kalmanRSpin_->setSingleStep(0.01);
+    kalmanRSpin_->setFixedWidth(60);
+    kalmanRSpin_->setValue(1.0); // Default value for R
+    rLayout->addWidget(rLabel);
+    rLayout->addWidget(kalmanRSpin_);
+    kalmanLayout->addLayout(qLayout);
+    kalmanLayout->addLayout(rLayout);
+    kalmanLayout->addStretch();
+    rightLayout->addLayout(kalmanLayout);
+    rightLayout->addSpacing(20);
 
     // Calibrate Button
     QPushButton *calibrateButton = new QPushButton("Calibrate", this);
     calibrateButton->setFixedSize(120, 40);
-
-    // Center the button horizontally
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
     buttonLayout->addWidget(calibrateButton);
     buttonLayout->addStretch();
-
-    // Add widgets to the right layout
-    rightLayout->addWidget(modeLabel_);
-    rightLayout->addWidget(liveDataCheckBox_);
-    rightLayout->addSpacing(40);
-    rightLayout->addLayout(buttonLayout);  // Centered button
+    rightLayout->addLayout(buttonLayout);
     rightLayout->addStretch();  // Push remaining content to the top
 
     // === Assemble Layout ===
@@ -106,42 +189,20 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
 void SensorsCalibrationWidget::updatePlot()
 {
     const int nPoints = 100;
-
-    if (liveDataCheckBox_->isChecked()) {
-        // Shift buffer left
-        for (int i = 0; i < nPoints - 1; ++i) {
-            pitchBuffer_[i] = pitchBuffer_[i + 1];
-            rollBuffer_[i] = rollBuffer_[i + 1];
-        }
-        // Add new value at the end
-        pitchBuffer_[nPoints - 1] = latestPitch_;
-        rollBuffer_[nPoints - 1] = latestRoll_;
-
-        // X axis is fixed: timeBuffer_ = [0, ..., 10]
-        plotPitch_->graph(0)->setData(timeBuffer_, pitchBuffer_);
-        plotRoll_->graph(0)->setData(timeBuffer_, rollBuffer_);
-    } else {
-        QVector<double> x(nPoints), yPitch(nPoints), yRoll(nPoints);
-        const double dt = 10.0 / (nPoints - 1);
-        for (int i = 0; i < nPoints; ++i) {
-            x[i] = i * dt;
-            yPitch[i] = 45 * sin(2 * M_PI * 1.0 * x[i] + phase_);
-            yRoll[i] = 30 * cos(2 * M_PI * 1.0 * x[i] + phase_);
-        }
-        plotPitch_->graph(0)->setData(x, yPitch);
-        plotRoll_->graph(0)->setData(x, yRoll);
-        phase_ += 0.1;
-        if (phase_ > 2 * M_PI)
-            phase_ -= 2 * M_PI;
+    // Only live data mode
+    // Shift buffer left
+    for (int i = 0; i < nPoints - 1; ++i) {
+        pitchBuffer_[i] = pitchBuffer_[i + 1];
+        rollBuffer_[i] = rollBuffer_[i + 1];
     }
-
+    // Add new value at the end
+    pitchBuffer_[nPoints - 1] = latestPitch_;
+    rollBuffer_[nPoints - 1] = latestRoll_;
+    // X axis is fixed: timeBuffer_ = [0, ..., 10]
+    plotPitch_->graph(0)->setData(timeBuffer_, pitchBuffer_);
+    plotRoll_->graph(0)->setData(timeBuffer_, rollBuffer_);
     plotPitch_->replot();
     plotRoll_->replot();
-}
-
-void SensorsCalibrationWidget::onLiveDataToggled(bool checked)
-{
-    modeLabel_->setText(checked ? "Mode: Live Sensor" : "Mode: Simulation");
 }
 
 

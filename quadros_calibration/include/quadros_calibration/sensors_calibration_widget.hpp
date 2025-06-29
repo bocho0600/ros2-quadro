@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QCheckBox>
 #include <QLabel>
+#include <QDoubleSpinBox>
 #include "quadros_calibration/qcustomplot.hpp"
 
 class SensorsCalibrationWidget : public QWidget
@@ -16,7 +17,6 @@ public:
 
 private slots:
     void updatePlot();
-    void onLiveDataToggled(bool checked);
 
 private:
     QCustomPlot *plotPitch_;
@@ -35,4 +35,7 @@ private:
     QVector<double> rollBuffer_;
     QVector<double> timeBuffer_;
     double time_;
+
+    QDoubleSpinBox *kalmanQSpin_ = nullptr;
+    QDoubleSpinBox *kalmanRSpin_ = nullptr;
 };

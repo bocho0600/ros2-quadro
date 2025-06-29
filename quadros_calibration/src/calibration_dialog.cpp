@@ -32,7 +32,7 @@ CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget
     setLayout(main_layout);
 
     // ROS2 publisher
-    publisher_ = node_->create_publisher<quadros_calibration::msg::MotorSpeed>("/quadros/set/motors", 10);
+    publisher_ = node_->create_publisher<quadros::msg::MotorSpeed>("/quadros/set/motors", 10);
     telemetry_sub_ = node_->create_subscription<quadros::msg::Telemetry>(
         "/quadros/state/telemetry", 10,
         std::bind(&CalibrationDialog::onTelemetryReceived, this, std::placeholders::_1)
@@ -58,7 +58,7 @@ void CalibrationDialog::publishMotorSpeeds() {
     if (stack_->currentIndex() != 0) return; // Only publish in Motor Calibration tab
 
     auto speeds = motor_widget_->getMotorSpeeds();
-    quadros_calibration::msg::MotorSpeed msg; // Create a new message instance
+    quadros::msg::MotorSpeed msg; // Create a new message instance
     msg.armed = motor_widget_->isArmed();  // <-- Set the armed field
     msg.motor_speed_1 = speeds[0];
     msg.motor_speed_2 = speeds[1];

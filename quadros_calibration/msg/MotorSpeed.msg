@@ -1,5 +1,0 @@
-float32 motor_speed_1
-float32 motor_speed_2
-float32 motor_speed_3
-float32 motor_speed_4
-bool armed
