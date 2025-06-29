@@ -33,6 +33,7 @@ CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget
 
     // ROS2 publisher
     publisher_ = node_->create_publisher<quadros::msg::MotorSpeed>("/quadros/set/motors", 10);
+    calibration_publisher_ = node_->create_publisher<quadros::msg::Calibration>("/quadros/set/calibration", 10);
     telemetry_sub_ = node_->create_subscription<quadros::msg::Telemetry>(
         "/quadros/state/telemetry", 10,
         std::bind(&CalibrationDialog::onTelemetryReceived, this, std::placeholders::_1)
@@ -41,6 +42,8 @@ CalibrationDialog::CalibrationDialog(std::shared_ptr<rclcpp::Node> node, QWidget
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, &CalibrationDialog::publishMotorSpeeds);
     timer_->start(100); // 100 ms
+
+    connect(sensor_widget_, &SensorsCalibrationWidget::calibrationRequested, this, &CalibrationDialog::publishCalibration);
 }
 
 void CalibrationDialog::onTelemetryReceived(const quadros::msg::Telemetry::SharedPtr msg)
@@ -67,4 +70,16 @@ void CalibrationDialog::publishMotorSpeeds() {
     publisher_->publish(msg);
 }
 
+void CalibrationDialog::publishCalibration() {
+    if (stack_->currentIndex() != 1) return; // Only publish in Sensors Calibration tab
 
+    auto calibration = sensor_widget_->getCalibration();
+    quadros::msg::Calibration msg;
+    msg.roll_pid = std::vector<float>(calibration.roll_pid.begin(), calibration.roll_pid.end());
+    msg.pitch_pid = std::vector<float>(calibration.pitch_pid.begin(), calibration.pitch_pid.end());
+    msg.yaw_pid = std::vector<float>(calibration.yaw_pid.begin(), calibration.yaw_pid.end());
+    msg.kalman_filter_qr = std::vector<float>(calibration.kalman_qr.begin(), calibration.kalman_qr.end());
+
+    // Publish the message to the calibration topic
+    calibration_publisher_->publish(msg);
+}

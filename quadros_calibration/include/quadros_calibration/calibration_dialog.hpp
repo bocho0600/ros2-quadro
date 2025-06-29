@@ -13,7 +13,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "quadros/msg/telemetry.hpp" // Add this include
 #include "quadros/msg/motor_speed.hpp" // Add this include
-
+#include "quadros/msg/calibration.hpp" // Add this include
 
 class CalibrationDialog : public QDialog {
     Q_OBJECT
@@ -25,6 +25,7 @@ private slots:
     void switchMode(int index);
 
     void publishMotorSpeeds();
+    void publishCalibration();
 
 private:
     QListWidget *menu_;
@@ -33,6 +34,7 @@ private:
     SensorsCalibrationWidget *sensor_widget_;   // instance of SensorsCalibrationWidget
     std::shared_ptr<rclcpp::Node> node_;
     rclcpp::Publisher<quadros::msg::MotorSpeed>::SharedPtr publisher_;
+    rclcpp::Publisher<quadros::msg::Calibration>::SharedPtr calibration_publisher_;
     rclcpp::Subscription<quadros::msg::Telemetry>::SharedPtr telemetry_sub_; // Add this member
     QTimer *timer_;
 

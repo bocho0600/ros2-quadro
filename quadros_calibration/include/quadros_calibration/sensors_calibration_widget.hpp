@@ -6,6 +6,14 @@
 #include <QLabel>
 #include <QDoubleSpinBox>
 #include "quadros_calibration/qcustomplot.hpp"
+#include <array>
+
+struct CalibrationValues {
+    std::array<float, 3> roll_pid;   // P, I, D
+    std::array<float, 3> pitch_pid;  // P, I, D
+    std::array<float, 3> yaw_pid;    // P, I, D
+    std::array<float, 2> kalman_qr;  // Q, R
+};
 
 class SensorsCalibrationWidget : public QWidget
 {
@@ -14,7 +22,7 @@ class SensorsCalibrationWidget : public QWidget
 public:
     explicit SensorsCalibrationWidget(QWidget *parent = nullptr);
     void setLiveAngles(double pitch, double roll);
-
+    CalibrationValues getCalibration() const;
 private slots:
     void updatePlot();
 
@@ -38,4 +46,7 @@ private:
 
     QDoubleSpinBox *kalmanQSpin_ = nullptr;
     QDoubleSpinBox *kalmanRSpin_ = nullptr;
+
+signals:
+    void calibrationRequested();
 };

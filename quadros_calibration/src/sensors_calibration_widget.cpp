@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 #include <cmath>  // For sin(), cos()
+#include <array>
 
 SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     : QWidget(parent), phase_(0.0), time_(0.0)
@@ -159,6 +160,10 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     buttonLayout->addWidget(calibrateButton);
     buttonLayout->addStretch();
     rightLayout->addLayout(buttonLayout);
+    // Connect calibrate button to emit calibrationRequested signal
+    connect(calibrateButton, &QPushButton::clicked, this, [this]() {
+        emit calibrationRequested();
+    });
     rightLayout->addStretch();  // Push remaining content to the top
 
     // === Assemble Layout ===
@@ -184,6 +189,8 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
 
     plotPitch_->xAxis->setRange(0, 10);
     plotRoll_->xAxis->setRange(0, 10);
+
+
 }
 
 void SensorsCalibrationWidget::updatePlot()
@@ -210,4 +217,47 @@ void SensorsCalibrationWidget::setLiveAngles(double pitch, double roll)
 {
     latestPitch_ = pitch;
     latestRoll_ = roll;
+}
+
+CalibrationValues SensorsCalibrationWidget::getCalibration() const {
+    CalibrationValues values;
+    // Find all QDoubleSpinBox widgets for each PID section
+    // Roll
+    QList<QDoubleSpinBox*> rollSpins = this->findChildren<QDoubleSpinBox*>(QString(), Qt::FindDirectChildrenOnly);
+    int found = 0;
+    for (auto *spin : rollSpins) {
+        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
+            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
+            if (label == "Roll") {
+                values.roll_pid[found++] = spin->value();
+                if (found == 3) break;
+            }
+        }
+    }
+    // Pitch
+    found = 0;
+    for (auto *spin : rollSpins) {
+        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
+            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
+            if (label == "Pitch") {
+                values.pitch_pid[found++] = spin->value();
+                if (found == 3) break;
+            }
+        }
+    }
+    // Yaw
+    found = 0;
+    for (auto *spin : rollSpins) {
+        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
+            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
+            if (label == "Yaw") {
+                values.yaw_pid[found++] = spin->value();
+                if (found == 3) break;
+            }
+        }
+    }
+    // Kalman Q/R
+    values.kalman_qr[0] = kalmanQSpin_ ? kalmanQSpin_->value() : 0.0f;
+    values.kalman_qr[1] = kalmanRSpin_ ? kalmanRSpin_->value() : 0.0f;
+    return values;
 }
