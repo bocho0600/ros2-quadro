@@ -34,7 +34,16 @@ private:
 
     QCheckBox *liveDataCheckBox_;
     QPushButton *calibrateButton_;
-    // ...existing members...
+    // PID spin boxes
+    QDoubleSpinBox *rollPSpin_ = nullptr;
+    QDoubleSpinBox *rollISpin_ = nullptr;
+    QDoubleSpinBox *rollDSpin_ = nullptr;
+    QDoubleSpinBox *pitchPSpin_ = nullptr;
+    QDoubleSpinBox *pitchISpin_ = nullptr;
+    QDoubleSpinBox *pitchDSpin_ = nullptr;
+    QDoubleSpinBox *yawPSpin_ = nullptr;
+    QDoubleSpinBox *yawISpin_ = nullptr;
+    QDoubleSpinBox *yawDSpin_ = nullptr;
     double latestPitch_ = 0.0;
     double latestRoll_ = 0.0;
     QLabel *modeLabel_;

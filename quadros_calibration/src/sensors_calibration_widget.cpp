@@ -52,7 +52,8 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     QVBoxLayout *rightLayout = new QVBoxLayout();
 
     // Helper lambda to create a PID row for a given label and default values
-    auto createPidSection = [this](const QString &title, double pDefault, double iDefault, double dDefault) {
+    auto createPidSection = [this](const QString &title, double pDefault, double iDefault, double dDefault,
+                                   QDoubleSpinBox **pSpinOut, QDoubleSpinBox **iSpinOut, QDoubleSpinBox **dSpinOut) {
         QVBoxLayout *sectionLayout = new QVBoxLayout();
         QLabel *sectionLabel = new QLabel(title, this);
         sectionLabel->setAlignment(Qt::AlignCenter);
@@ -96,22 +97,25 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
         pidLayout->addLayout(dLayout);
         pidLayout->addStretch();
         sectionLayout->addLayout(pidLayout);
+        if (pSpinOut) *pSpinOut = pSpin;
+        if (iSpinOut) *iSpinOut = iSpin;
+        if (dSpinOut) *dSpinOut = dSpin;
         return sectionLayout;
     };
 
     // Add Roll, Pitch, Yaw PID sections with lines between them and default values
     rightLayout->addSpacing(10);
-    rightLayout->addLayout(createPidSection("Roll", 0.6, 3.5, 0.03));
+    rightLayout->addLayout(createPidSection("Roll", 0.6, 3.5, 0.03, &rollPSpin_, &rollISpin_, &rollDSpin_));
     QFrame *line1 = new QFrame();
     line1->setFrameShape(QFrame::HLine);
     line1->setFrameShadow(QFrame::Sunken);
     rightLayout->addWidget(line1);
-    rightLayout->addLayout(createPidSection("Pitch", 0.6, 3.5, 0.03));
+    rightLayout->addLayout(createPidSection("Pitch", 0.6, 3.5, 0.03, &pitchPSpin_, &pitchISpin_, &pitchDSpin_));
     QFrame *line2 = new QFrame();
     line2->setFrameShape(QFrame::HLine);
     line2->setFrameShadow(QFrame::Sunken);
     rightLayout->addWidget(line2);
-    rightLayout->addLayout(createPidSection("Yaw", 2.0, 12.0, 0.0));
+    rightLayout->addLayout(createPidSection("Yaw", 2.0, 12.0, 0.0, &yawPSpin_, &yawISpin_, &yawDSpin_));
     rightLayout->addSpacing(20);
     QFrame *line3 = new QFrame();
     line3->setFrameShape(QFrame::HLine);
@@ -130,7 +134,7 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     QLabel *qLabel = new QLabel("Q", this);
     kalmanQSpin_ = new QDoubleSpinBox(this);
     kalmanQSpin_->setRange(0.0, 10000.0);
-    kalmanQSpin_->setDecimals(2);
+    kalmanQSpin_->setDecimals(2); //
     kalmanQSpin_->setSingleStep(0.01);
     kalmanQSpin_->setFixedWidth(60);
     kalmanQSpin_->setValue(1.0); // Default value for Q
@@ -221,42 +225,15 @@ void SensorsCalibrationWidget::setLiveAngles(double pitch, double roll)
 
 CalibrationValues SensorsCalibrationWidget::getCalibration() const {
     CalibrationValues values;
-    // Find all QDoubleSpinBox widgets for each PID section
-    // Roll
-    QList<QDoubleSpinBox*> rollSpins = this->findChildren<QDoubleSpinBox*>(QString(), Qt::FindDirectChildrenOnly);
-    int found = 0;
-    for (auto *spin : rollSpins) {
-        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
-            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
-            if (label == "Roll") {
-                values.roll_pid[found++] = spin->value();
-                if (found == 3) break;
-            }
-        }
-    }
-    // Pitch
-    found = 0;
-    for (auto *spin : rollSpins) {
-        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
-            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
-            if (label == "Pitch") {
-                values.pitch_pid[found++] = spin->value();
-                if (found == 3) break;
-            }
-        }
-    }
-    // Yaw
-    found = 0;
-    for (auto *spin : rollSpins) {
-        if (spin->parentWidget() && spin->parentWidget()->parentWidget()) {
-            QString label = spin->parentWidget()->parentWidget()->findChild<QLabel*>()->text();
-            if (label == "Yaw") {
-                values.yaw_pid[found++] = spin->value();
-                if (found == 3) break;
-            }
-        }
-    }
-    // Kalman Q/R
+    values.roll_pid[0] = rollPSpin_ ? rollPSpin_->value() : 0.0f; // if 
+    values.roll_pid[1] = rollISpin_ ? rollISpin_->value() : 0.0f;
+    values.roll_pid[2] = rollDSpin_ ? rollDSpin_->value() : 0.0f;
+    values.pitch_pid[0] = pitchPSpin_ ? pitchPSpin_->value() : 0.0f;
+    values.pitch_pid[1] = pitchISpin_ ? pitchISpin_->value() : 0.0f;
+    values.pitch_pid[2] = pitchDSpin_ ? pitchDSpin_->value() : 0.0f;
+    values.yaw_pid[0] = yawPSpin_ ? yawPSpin_->value() : 0.0f;
+    values.yaw_pid[1] = yawISpin_ ? yawISpin_->value() : 0.0f;
+    values.yaw_pid[2] = yawDSpin_ ? yawDSpin_->value() : 0.0f;
     values.kalman_qr[0] = kalmanQSpin_ ? kalmanQSpin_->value() : 0.0f;
     values.kalman_qr[1] = kalmanRSpin_ ? kalmanRSpin_->value() : 0.0f;
     return values;
