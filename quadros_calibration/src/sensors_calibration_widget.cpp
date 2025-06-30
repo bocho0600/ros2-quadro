@@ -97,7 +97,8 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
         pidLayout->addLayout(dLayout);
         pidLayout->addStretch();
         sectionLayout->addLayout(pidLayout);
-        if (pSpinOut) *pSpinOut = pSpin;
+        // if 
+        if (pSpinOut) *pSpinOut = pSpin; // assign the spin box to the output pointer
         if (iSpinOut) *iSpinOut = iSpin;
         if (dSpinOut) *dSpinOut = dSpin;
         return sectionLayout;
@@ -225,16 +226,16 @@ void SensorsCalibrationWidget::setLiveAngles(double pitch, double roll)
 
 CalibrationValues SensorsCalibrationWidget::getCalibration() const {
     CalibrationValues values;
-    values.roll_pid[0] = rollPSpin_ ? rollPSpin_->value() : 0.0f; // if 
-    values.roll_pid[1] = rollISpin_ ? rollISpin_->value() : 0.0f;
-    values.roll_pid[2] = rollDSpin_ ? rollDSpin_->value() : 0.0f;
-    values.pitch_pid[0] = pitchPSpin_ ? pitchPSpin_->value() : 0.0f;
-    values.pitch_pid[1] = pitchISpin_ ? pitchISpin_->value() : 0.0f;
-    values.pitch_pid[2] = pitchDSpin_ ? pitchDSpin_->value() : 0.0f;
-    values.yaw_pid[0] = yawPSpin_ ? yawPSpin_->value() : 0.0f;
-    values.yaw_pid[1] = yawISpin_ ? yawISpin_->value() : 0.0f;
-    values.yaw_pid[2] = yawDSpin_ ? yawDSpin_->value() : 0.0f;
-    values.kalman_qr[0] = kalmanQSpin_ ? kalmanQSpin_->value() : 0.0f;
-    values.kalman_qr[1] = kalmanRSpin_ ? kalmanRSpin_->value() : 0.0f;
+    values.roll_pid[0] = rollPSpin_->value();
+    values.roll_pid[1] = rollISpin_->value();
+    values.roll_pid[2] = rollDSpin_->value();
+    values.pitch_pid[0] = pitchPSpin_->value();
+    values.pitch_pid[1] = pitchISpin_->value();
+    values.pitch_pid[2] = pitchDSpin_->value();
+    values.yaw_pid[0] = yawPSpin_->value();
+    values.yaw_pid[1] = yawISpin_->value();
+    values.yaw_pid[2] = yawDSpin_->value();
+    values.kalman_qr[0] = kalmanQSpin_->value();
+    values.kalman_qr[1] = kalmanRSpin_->value();
     return values;
 }
