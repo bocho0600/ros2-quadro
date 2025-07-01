@@ -160,6 +160,11 @@ SensorsCalibrationWidget::SensorsCalibrationWidget(QWidget *parent)
     // Calibrate Button
     QPushButton *calibrateButton = new QPushButton("Calibrate", this);
     calibrateButton->setFixedSize(120, 40);
+    // set font
+    QFont buttonFont = calibrateButton->font();
+    buttonFont.setPointSize(10);
+    buttonFont.setBold(true);
+    calibrateButton->setFont(buttonFont);
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
     buttonLayout->addWidget(calibrateButton);
